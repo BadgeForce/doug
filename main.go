@@ -1,7 +1,17 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+
+	"github.com/google/go-github/github"
+)
+
 func main() {
-	/*file, e := ioutil.ReadFile("./example.json")
+	file, e := ioutil.ReadFile("./example.json")
 	if e != nil {
 		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)
@@ -11,6 +21,5 @@ func main() {
 		log.Printf("Failed processing hook! ('%s')", err)
 	}
 	err := UploadArtifacts(evt)
-	log.Fatal(err)*/
-
+	log.Fatal(err)
 }

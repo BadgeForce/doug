@@ -41,7 +41,7 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-//ArtifactRelease . . .
+//ArtifactRelease . . . http handler that will handle github release events, particularly your truffle projects
 func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
 
 	hc, err := ParseHook([]byte(secret), r)
@@ -55,9 +55,6 @@ func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Received %s", hc.Event)
-
-	// parse `hc.Payload` or do additional processing here
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
 		w.WriteHeader(http.StatusBadRequest)

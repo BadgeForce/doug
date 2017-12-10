@@ -89,6 +89,10 @@ func makeTempDir() (string, error) {
 	return name.String(), nil
 }
 
+func removeTempDir(name string) {
+	os.RemoveAll("./" + name)
+}
+
 //CloneRepo . . .
 func CloneRepo(sshURL string, tagName string) (string, error) {
 	dir, err := makeTempDir()

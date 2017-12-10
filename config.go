@@ -8,9 +8,9 @@ import (
 
 //Config struct that holds configs
 type Config struct {
-	AWSCONf   s3                       `toml:"s3"`
+	S3Conf    s3                       `toml:"s3"`
 	Projects  []map[string]interface{} `toml:"projects"`
-	Artifacts map[string]map[string]interface{}
+	Artifacts map[string][]interface{}
 }
 
 //AWS . . .
@@ -23,10 +23,11 @@ type s3 struct {
 var Configs Config
 
 func postDecode(config *Config) {
-	config.Artifacts = make(map[string]map[string]interface{})
+	config.Artifacts = make(map[string][]interface{})
 	for _, project := range config.Projects {
 		name := project["name"].(string)
-		config.Artifacts[name] = project
+		artifacts := project["artifacts"].([]interface{})
+		config.Artifacts[name] = append(config.Artifacts[name], artifacts...)
 	}
 }
 
@@ -38,5 +39,7 @@ func init() {
 		return
 	}
 	postDecode(&Configs)
-	log.Print(Configs.Artifacts["badgeforce"])
+	if len(Configs.S3Conf.Regions) == 0 {
+		log.Fatalln("S3 configs do not have any regions specified")
+	}
 }
