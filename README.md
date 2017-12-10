@@ -1,6 +1,8 @@
 # doug
 Solidity contract artifact release manager
 
+![Build status](https://travis-ci.org/BadgeForce/doug.svg?branch=master)
+
 ## Overview 
 Exposing the JSON ABI for your smart contracts enables opensource contributions, development and makes collaboration easier for your daaps (decentralized applications) . Even if 
 you are not developing an daap for public collaboration it is useful to expose these JSON files within your dev organization. These JSON files are the product of [truffle](http://truffleframework.com/) compilation when using truffle to build daaps. This project is a [github webhook](https://developer.github.com/v3/repos/releases/#get-a-single-release) server written in Go that will upload your configured JSON ABI files to S3 for public consumption whenever you release a new version of your daap.
