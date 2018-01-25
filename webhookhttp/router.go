@@ -1,4 +1,4 @@
-package webhook-http
+package webhookhttp
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
+	"github.com/BadgeForce/doug"
 )
 
 //Route . . .
@@ -44,7 +45,7 @@ func NewRouter() *mux.Router {
 //ArtifactRelease . . . http handler that will handle github release events, particularly your truffle projects
 func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
 
-	hc, err := ParseHook([]byte(secret), r)
+	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), r)
 
 	w.Header().Set("Content-type", "application/json")
 

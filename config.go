@@ -38,8 +38,8 @@ func postDecode(config *Config) {
 }
 
 //Initializes configurations
-func init() {
-	if _, err := toml.DecodeFile("./configuration/config.toml", &Configs); err != nil {
+func InitializeConfig(path string) {
+	if _, err := toml.DecodeFile(path, &Configs); err != nil {
 		log.Println("Check your configs.")
 		log.Fatalln(err.Error())
 		return

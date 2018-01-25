@@ -1,4 +1,4 @@
-package webhook-http
+package webhookhttp
 
 import (
 	"log"
