@@ -1,9 +1,7 @@
 package webhookhttp
 
 import (
-	"log"
 	"net/http"
-
 	"github.com/gorilla/mux"
 )
 

@@ -10,7 +10,7 @@ import (
 
 //LambdaHandler . . .
 func lambdaHandler(req *http.Request) error {
-	hc, err := ParseHook([]byte(doug.Configs.Github.Secret), req)
+	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func lambdaHandler(req *http.Request) error {
 	return nil
 }
 
-func GetLamdaFn(configPath string) fn {
+func GetLamdaFn(configPath string) (func(*http.Request) error) {
 	doug.InitializeConfig(configPath)
 	return lambdaHandler
 }
