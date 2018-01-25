@@ -6,7 +6,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"os/exec"
 	"strings"
@@ -49,7 +51,12 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, req *http.Request) (*HookContext, error) {
 	hc := HookContext{}
+	dump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		return nil, err
+	}
 
+	log.Println(string(dump))
 	if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
 		return nil, errors.New("No signature!")
 	}
