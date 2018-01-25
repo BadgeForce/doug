@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/go-github/github"
 	"github.com/BadgeForce/doug"
+	"github.com/google/go-github/github"
 )
 
 //LambdaHandler . . .
@@ -23,7 +23,7 @@ func lambdaHandler(req *http.Request) error {
 	return nil
 }
 
-func GetLamdaFn(configPath string) (func(*http.Request) error) {
+func NewLamdaFn(configPath string) func(*http.Request) error {
 	doug.InitializeConfig(configPath)
 	return lambdaHandler
 }
