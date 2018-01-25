@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/BadgeForce/doug"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/google/go-github/github"
 )
 
 //LambdaHandler . . .
-func lambdaHandler(req *http.Request) error {
+func lambdaHandler(request events.APIGatewayProxyRequest) error {
 	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
 	if err != nil {
 		return err

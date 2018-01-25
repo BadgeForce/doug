@@ -6,12 +6,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"log"
-	"net/http"
-	"net/http/httputil"
 	"os"
 	"os/exec"
 	"strings"
 
+	"github.com/aws/aws-lambda-go/events"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -48,14 +47,9 @@ type HookContext struct {
 }
 
 //ParseHook . . .
-func ParseHook(secret []byte, req *http.Request) (*HookContext, error) {
+func ParseHook(secret []byte, request events.APIGatewayProxyRequest) (*HookContext, error) {
 	// hc := HookContext{}
-	dump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println(string(dump))
+	log.Println(request)
 	return nil, errors.New("messed up")
 	// if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
 	// 	return nil, errors.New("No signature!")
