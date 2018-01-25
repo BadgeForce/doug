@@ -11,6 +11,12 @@ type Config struct {
 	S3Conf    s3                       `toml:"s3"`
 	Projects  []map[string]interface{} `toml:"projects"`
 	Artifacts map[string][]interface{}
+	Github    `toml:"github"`
+}
+
+//Github . . .
+type Github struct {
+	Secret string `toml:"secret"`
 }
 
 //AWS . . .

@@ -11,7 +11,7 @@ import (
 )
 
 func getTestEvnt() github.ReleaseEvent {
-	file, e := ioutil.ReadFile("./example.json")
+	file, e := ioutil.ReadFile("./test-files/gh-release-payload.json")
 	if e != nil {
 		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)

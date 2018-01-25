@@ -14,8 +14,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Replace with your hook's secret
-const secret = "shhhhh!!"
 const branch = "--branch"
 const depth = "--depth"
 
@@ -80,8 +78,11 @@ func ParseHook(secret []byte, req *http.Request) (*HookContext, error) {
 }
 
 func makeTempDir() (string, error) {
-	name := uuid.NewV4()
-	err := os.Mkdir(name.String(), 0777)
+	name, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	err = os.Mkdir(name.String(), 0777)
 	if err != nil {
 		return "", err
 	}
