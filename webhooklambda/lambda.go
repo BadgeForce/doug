@@ -2,7 +2,6 @@ package webhooklambda
 
 import (
 	"encoding/json"
-	"net/http"
 
 	"github.com/BadgeForce/doug"
 	"github.com/aws/aws-lambda-go/events"
@@ -10,7 +9,7 @@ import (
 )
 
 //LambdaHandler . . .
-func lambdaHandler(request events.APIGatewayProxyRequest) error {
+func lambdaHandler(req events.APIGatewayProxyRequest) error {
 	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
 	if err != nil {
 		return err
@@ -24,7 +23,7 @@ func lambdaHandler(request events.APIGatewayProxyRequest) error {
 	return nil
 }
 
-func NewLamdaFn(configPath string) func(*http.Request) error {
+func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) error {
 	doug.InitializeConfig(configPath)
 	return lambdaHandler
 }
