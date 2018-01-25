@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -50,38 +49,39 @@ type HookContext struct {
 
 //ParseHook . . .
 func ParseHook(secret []byte, req *http.Request) (*HookContext, error) {
-	hc := HookContext{}
+	// hc := HookContext{}
 	dump, err := httputil.DumpRequest(req, true)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Println(string(dump))
-	if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
-		return nil, errors.New("No signature!")
-	}
-
-	if hc.Event = req.Header.Get("x-github-event"); len(hc.Event) == 0 {
-		return nil, errors.New("No event!")
-	}
-
-	if hc.Id = req.Header.Get("x-github-delivery"); len(hc.Id) == 0 {
-		return nil, errors.New("No event Id!")
-	}
-
-	body, err := ioutil.ReadAll(req.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if !verifySignature(secret, hc.Signature, body) {
-		return nil, errors.New("Invalid signature")
-	}
-
-	hc.Payload = body
-
-	return &hc, nil
+	return nil, errors.New("messed up")
+	// if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
+	// 	return nil, errors.New("No signature!")
+	// }
+	//
+	// if hc.Event = req.Header.Get("x-github-event"); len(hc.Event) == 0 {
+	// 	return nil, errors.New("No event!")
+	// }
+	//
+	// if hc.Id = req.Header.Get("x-github-delivery"); len(hc.Id) == 0 {
+	// 	return nil, errors.New("No event Id!")
+	// }
+	//
+	// body, err := ioutil.ReadAll(req.Body)
+	//
+	// if err != nil {
+	// 	return nil, err
+	// }
+	//
+	// if !verifySignature(secret, hc.Signature, body) {
+	// 	return nil, errors.New("Invalid signature")
+	// }
+	//
+	// hc.Payload = body
+	//
+	// return &hc, nil
 }
 
 func makeTempDir() (string, error) {
