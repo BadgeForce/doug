@@ -1,4 +1,4 @@
-package main
+package doug
 
 import (
 	"crypto/hmac"

@@ -1,4 +1,4 @@
-package main
+package doug
 
 import (
 	"log"
@@ -39,7 +39,7 @@ func postDecode(config *Config) {
 
 //Initializes configurations
 func init() {
-	if _, err := toml.DecodeFile("./config.toml", &Configs); err != nil {
+	if _, err := toml.DecodeFile("./configuration/config.toml", &Configs); err != nil {
 		log.Println("Check your configs.")
 		log.Fatalln(err.Error())
 		return
