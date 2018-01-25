@@ -1,0 +1,16 @@
+title = "BadgeForce Artifact Manager (doug) config file"
+
+[github]
+secret = "shhhhh!!"
+
+[s3]
+regions = ["us-east-1"]
+bucket = "badgeforce-artifacts"
+
+[[projects]]
+name = "badgeforce"
+artifacts = ["Issuer.json", "Holder.json"]
+
+[[projects]]
+name = "badgeforce_3"
+artifacts = ["Issuer.json", "Holder.json"]

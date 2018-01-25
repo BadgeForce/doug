@@ -1,4 +1,4 @@
-package main
+package doug
 
 import (
 	"log"
@@ -11,6 +11,12 @@ type Config struct {
 	S3Conf    s3                       `toml:"s3"`
 	Projects  []map[string]interface{} `toml:"projects"`
 	Artifacts map[string][]interface{}
+	Github    `toml:"github"`
+}
+
+//Github . . .
+type Github struct {
+	Secret string `toml:"secret"`
 }
 
 //AWS . . .
@@ -33,7 +39,7 @@ func postDecode(config *Config) {
 
 //Initializes configurations
 func init() {
-	if _, err := toml.DecodeFile("./config.toml", &Configs); err != nil {
+	if _, err := toml.DecodeFile("./configuration/config.toml", &Configs); err != nil {
 		log.Println("Check your configs.")
 		log.Fatalln(err.Error())
 		return

@@ -1,4 +1,4 @@
-package main
+package doug
 
 import "testing"
 import "os"
