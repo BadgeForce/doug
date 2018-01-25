@@ -26,5 +26,7 @@ func (s *MyServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	s.r.ServeHTTP(rw, req)
 }
 
-//Router . . .
-Router := NewRouter()
+func NewWebHooKServer() *MyServer {
+  router := NewRouter()
+  return &MyServer{router}
+}
