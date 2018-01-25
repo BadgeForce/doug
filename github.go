@@ -5,7 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -49,7 +49,7 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, request events.APIGatewayProxyRequest) (*HookContext, error) {
 	// hc := HookContext{}
-	log.Println(request)
+	fmt.Printf("%+v\n", request)
 	return nil, errors.New("messed up")
 	// if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
 	// 	return nil, errors.New("No signature!")
