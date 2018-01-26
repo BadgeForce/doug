@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -52,6 +53,7 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, requestHeaders map[string]string, requestBody string) (*HookContext, error) {
 	hc := HookContext{}
+	fmt.Printf("request headers: %v", requestHeaders)
 	if hc.Signature = requestHeaders[sigHeader]; len(hc.Signature) == 0 {
 		return nil, errors.New("No signature!")
 	}
