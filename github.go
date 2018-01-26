@@ -48,35 +48,30 @@ type HookContext struct {
 
 //ParseHook . . .
 func ParseHook(secret []byte, request events.APIGatewayProxyRequest) (*HookContext, error) {
-	// hc := HookContext{}
+	hc := HookContext{}
 	fmt.Printf("%+v\n", request.Headers)
 	fmt.Printf("%+v\n", request.Body)
-	return nil, errors.New("messed up")
-	// if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
-	// 	return nil, errors.New("No signature!")
-	// }
-	//
-	// if hc.Event = req.Header.Get("x-github-event"); len(hc.Event) == 0 {
-	// 	return nil, errors.New("No event!")
-	// }
-	//
-	// if hc.Id = req.Header.Get("x-github-delivery"); len(hc.Id) == 0 {
-	// 	return nil, errors.New("No event Id!")
-	// }
-	//
-	// body, err := ioutil.ReadAll(req.Body)
-	//
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// if !verifySignature(secret, hc.Signature, body) {
-	// 	return nil, errors.New("Invalid signature")
-	// }
-	//
-	// hc.Payload = body
-	//
-	// return &hc, nil
+	if hc.Signature = request.Headers["x-hub-signature"]; len(hc.Signature) == 0 {
+		return nil, errors.New("No signature!")
+	}
+
+	if hc.Event = request.Headers["x-github-event"]; len(hc.Event) == 0 {
+		return nil, errors.New("No event!")
+	}
+
+	if hc.Id = request.Headers["x-github-delivery"]; len(hc.Id) == 0 {
+		return nil, errors.New("No event Id!")
+	}
+
+	body := []byte(request.Body)
+
+	if !verifySignature(secret, hc.Signature, body) {
+		return nil, errors.New("Invalid signature")
+	}
+
+	hc.Payload = body
+
+	return &hc, nil
 }
 
 func makeTempDir() (string, error) {
