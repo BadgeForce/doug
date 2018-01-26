@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/BadgeForce/doug"
 	"github.com/google/go-github/github"
 	"github.com/gorilla/mux"
-	"github.com/BadgeForce/doug"
 )
 
 //Route . . .
@@ -58,6 +58,14 @@ func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
 
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Failed processing hook! ('%s')", err)
+		io.WriteString(w, "{}")
+		return
+	}
+
+	err = doug.UploadArtifacts(evt)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("Failed processing hook! ('%s')", err)
 		io.WriteString(w, "{}")

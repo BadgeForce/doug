@@ -18,29 +18,42 @@ import (
 const truffleArtifactPath = "/build/contracts"
 
 //UploadArtifacts . . .
-func UploadArtifacts(event github.ReleaseEvent) error {
+func UploadArtifacts(event github.ReleaseEvent) []error {
 	repo := event.GetRepo()
 	tagName := event.GetRelease().GetTagName()
 	sshURL := repo.GetSSHURL()
 	dir, err := CloneRepo(sshURL, tagName)
 	if err != nil {
-		return err
+		return []error{err}
 	}
-	upload(dir, repo.GetName()+"/"+tagName, repo.GetName())
+	errors := upload(dir, repo.GetName()+"/"+tagName, repo.GetName())
+	if errors != nil {
+		return errors
+	}
+
 	return nil
 }
 
-func upload(tempDir string, s3Path string, project string) {
+func upload(tempDir string, s3Path string, project string) []error {
 	var wg sync.WaitGroup
+	var errorMap sync.Map
+	errorMap.Store("errors", []error{})
 	for _, artifact := range Configs.Artifacts[project] {
 		path := fmt.Sprintf("%s/%s", s3Path, artifact.(string))
 		err := s3Upload(tempDir, path, artifact.(string), &wg)
 		if err != nil {
-			log.Println(err.Error())
+			errors, _ := errorMap.Load("errors")
+			errorMap.Store("errors", append(errors.([]error), err))
 		}
 	}
 	wg.Wait()
 	removeTempDir(tempDir)
+	errors, _ := errorMap.Load("errors")
+	if len(errors.([]error)) > 0 {
+		return errors.([]error)
+	}
+
+	return nil
 }
 
 func s3Upload(tempDir string, s3Path string, artifact string, wg *sync.WaitGroup) error {

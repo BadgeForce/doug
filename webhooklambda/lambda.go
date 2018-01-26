@@ -12,15 +12,31 @@ import (
 func lambdaHandler(req events.APIGatewayProxyRequest) error {
 	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
 	if err != nil {
-		return err
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: 400,
+		}
 	}
 
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
-		return err
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: 400,
+		}
 	}
 
-	return nil
+	err = doug.UploadArtifacts(evt)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: 500,
+		}
+	}
+	return return events.APIGatewayProxyResponse{
+		Body: err.Error(),
+		StatusCode: 400,
+	}
 }
 
 func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) error {
