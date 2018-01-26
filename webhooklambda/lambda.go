@@ -15,7 +15,7 @@ type S3UploadError struct {
 
 //LambdaHandler . . .
 func lambdaHandler(req events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
-	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
+	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req.Headers, req.Body)
 	if err != nil {
 		return getGateWayRes(err.Error(), 400)
 	}

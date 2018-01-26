@@ -2,8 +2,9 @@ package webhookhttp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/BadgeForce/doug"
@@ -44,37 +45,52 @@ func NewRouter() *mux.Router {
 
 //ArtifactRelease . . . http handler that will handle github release events, particularly your truffle projects
 func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
-
-	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), r)
-
 	w.Header().Set("Content-type", "application/json")
 
+	var headers map[string]string
+	b, err := json.Marshal(r.Header)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Failed processing hook! ('%s')", err)
-		io.WriteString(w, "{}")
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", err), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.Unmarshal(b, &headers); err != nil {
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", err), http.StatusInternalServerError)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", err), http.StatusInternalServerError)
+		return
+	}
+
+	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), headers, string(body))
+	if err != nil {
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", err), http.StatusBadRequest)
 		return
 	}
 
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Failed processing hook! ('%s')", err)
-		io.WriteString(w, "{}")
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", err), http.StatusBadRequest)
 		return
 	}
 
 	errors := doug.UploadArtifacts(evt)
 	if errors != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Failed processing hook! ('%s')", errors)
-		io.WriteString(w, "{}")
+		writeError(w, fmt.Sprintf("Failed processing hook! ('%+v')", errors), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	io.WriteString(w, "{}")
 	return
+}
+
+func writeError(w http.ResponseWriter, message string, status int) {
+	w.WriteHeader(status)
+	io.WriteString(w, message)
 }
 
 var routes = Routes{
