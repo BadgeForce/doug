@@ -21,8 +21,8 @@ const truffleArtifactPath = "/build/contracts"
 func UploadArtifacts(event github.ReleaseEvent) []error {
 	repo := event.GetRepo()
 	tagName := event.GetRelease().GetTagName()
-	sshURL := repo.GetSSHURL()
-	dir, err := CloneRepo(sshURL, tagName)
+	url := repo.GetCloneURL()
+	dir, err := CloneRepo(url, tagName)
 	if err != nil {
 		return []error{err}
 	}
