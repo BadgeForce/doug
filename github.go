@@ -6,15 +6,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"os"
-	"os/exec"
 	"strings"
 
 	uuid "github.com/satori/go.uuid"
+	git "gopkg.in/src-d/go-git.v4"
 )
 
 const (
-	branch           = "--branch"
-	depth            = "--depth"
 	sigHeader        = "X-Hub-Signature"
 	ghEventHeader    = "X-GitHub-Event"
 	ghDeliveryHeader = "X-GitHub-Delivery"
@@ -97,13 +95,15 @@ func removeTempDir(name string) {
 }
 
 //CloneRepo . . .
-func CloneRepo(sshURL string, tagName string) (string, error) {
+func CloneRepo(url string, tagName string) (string, error) {
 	dir, err := makeTempDir()
 	if err != nil {
 		return "", err
 	}
-	cmd := exec.Command("git", "clone", branch, tagName, depth, "1", sshURL, dir)
-	err = cmd.Run()
+	_, err = git.PlainClone(dir, false, &git.CloneOptions{
+		URL:               url,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+	})
 	if err != nil {
 		return "", err
 	}
