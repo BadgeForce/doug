@@ -64,10 +64,10 @@ func ArtifactRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = doug.UploadArtifacts(evt)
-	if err != nil {
+	errors := doug.UploadArtifacts(evt)
+	if errors != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Failed processing hook! ('%s')", err)
+		log.Printf("Failed processing hook! ('%s')", errors)
 		io.WriteString(w, "{}")
 		return
 	}

@@ -5,12 +5,10 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 
-	"github.com/aws/aws-lambda-go/events"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -47,23 +45,21 @@ type HookContext struct {
 }
 
 //ParseHook . . .
-func ParseHook(secret []byte, request events.APIGatewayProxyRequest) (*HookContext, error) {
+func ParseHook(secret []byte, requestHeaders map[string]string, requestBody string) (*HookContext, error) {
 	hc := HookContext{}
-	fmt.Printf("%+v\n", request.Headers)
-	fmt.Printf("%+v\n", request.Body)
-	if hc.Signature = request.Headers["x-hub-signature"]; len(hc.Signature) == 0 {
+	if hc.Signature = requestHeaders["x-hub-signature"]; len(hc.Signature) == 0 {
 		return nil, errors.New("No signature!")
 	}
 
-	if hc.Event = request.Headers["x-github-event"]; len(hc.Event) == 0 {
+	if hc.Event = requestHeaders["x-github-event"]; len(hc.Event) == 0 {
 		return nil, errors.New("No event!")
 	}
 
-	if hc.Id = request.Headers["x-github-delivery"]; len(hc.Id) == 0 {
+	if hc.Id = requestHeaders["x-github-delivery"]; len(hc.Id) == 0 {
 		return nil, errors.New("No event Id!")
 	}
 
-	body := []byte(request.Body)
+	body := []byte(requestBody)
 
 	if !verifySignature(secret, hc.Signature, body) {
 		return nil, errors.New("Invalid signature")

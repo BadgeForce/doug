@@ -8,38 +8,48 @@ import (
 	"github.com/google/go-github/github"
 )
 
+type S3UploadError struct {
+	Message string   `json:"message"`
+	Errors  []string `json:"errors"`
+}
+
 //LambdaHandler . . .
-func lambdaHandler(req events.APIGatewayProxyRequest) error {
+func lambdaHandler(req events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req)
 	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 400,
-		}
+		return getGateWayRes(err.Error(), 400)
 	}
 
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 400,
-		}
+		return getGateWayRes(err.Error(), 400)
 	}
 
-	err = doug.UploadArtifacts(evt)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			Body:       err.Error(),
-			StatusCode: 500,
+	errors := doug.UploadArtifacts(evt)
+	if errors != nil {
+		var errStrs []string
+		for _, err = range errors {
+			errStrs = append(errStrs, err.Error())
 		}
+
+		b, err := json.Marshal(S3UploadError{"Errors while uploading artifacts to S3", errStrs})
+		if err != nil {
+			return getGateWayRes(err.Error(), 500)
+		}
+		return getGateWayRes(string(b), 500)
 	}
-	return return events.APIGatewayProxyResponse{
-		Body: err.Error(),
-		StatusCode: 400,
+
+	return getGateWayRes("Artifacts Uploaded", 200)
+}
+
+func getGateWayRes(body string, statusCode int) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		Body:       body,
+		StatusCode: statusCode,
 	}
 }
 
-func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) error {
+func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
 	doug.InitializeConfig(configPath)
 	return lambdaHandler
 }
