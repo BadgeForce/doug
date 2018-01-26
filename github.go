@@ -49,7 +49,8 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, request events.APIGatewayProxyRequest) (*HookContext, error) {
 	// hc := HookContext{}
-	fmt.Printf("%+v\n", request)
+	fmt.Printf("%+v\n", request.Headers)
+	fmt.Printf("%+v\n", request.Body)
 	return nil, errors.New("messed up")
 	// if hc.Signature = req.Header.Get("x-hub-signature"); len(hc.Signature) == 0 {
 	// 	return nil, errors.New("No signature!")
