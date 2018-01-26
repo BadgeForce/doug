@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"sync"
 
@@ -26,9 +25,9 @@ func UploadArtifacts(event github.ReleaseEvent) []error {
 	if err != nil {
 		return []error{err}
 	}
-	errors := upload(dir, repo.GetName()+"/"+tagName, repo.GetName())
-	if errors != nil {
-		return errors
+	errs := upload(dir, repo.GetName()+"/"+tagName, repo.GetName())
+	if errs != nil {
+		return errs
 	}
 
 	return nil
@@ -37,29 +36,29 @@ func UploadArtifacts(event github.ReleaseEvent) []error {
 func upload(tempDir string, s3Path string, project string) []error {
 	var wg sync.WaitGroup
 	var errorMap sync.Map
-	errorMap.Store("errors", []error{})
+	errorMap.Store("errs", []error{})
 	for _, artifact := range Configs.Artifacts[project] {
 		path := fmt.Sprintf("%s/%s", s3Path, artifact.(string))
 		err := s3Upload(tempDir, path, artifact.(string), &wg)
 		if err != nil {
-			errors, _ := errorMap.Load("errors")
-			errorMap.Store("errors", append(errors.([]error), err))
+			errs, _ := errorMap.Load("errs")
+			errorMap.Store("errs", append(errs.([]error), err...))
 		}
 	}
 	wg.Wait()
 	removeTempDir(tempDir)
-	errors, _ := errorMap.Load("errors")
-	if len(errors.([]error)) > 0 {
-		return errors.([]error)
+	errs, _ := errorMap.Load("errs")
+	if len(errs.([]error)) > 0 {
+		return errs.([]error)
 	}
 
 	return nil
 }
 
-func s3Upload(tempDir string, s3Path string, artifact string, wg *sync.WaitGroup) error {
-	file, err := os.Open("./" + tempDir + truffleArtifactPath + "/" + artifact)
+func s3Upload(tempDir string, s3Path string, artifact string, wg *sync.WaitGroup) []error {
+	file, err := os.Open(tempDir + truffleArtifactPath + "/" + artifact)
 	if err != nil {
-		return err
+		return []error{err}
 	}
 	reader, writer := io.Pipe()
 	wg.Add(1)
@@ -71,32 +70,42 @@ func s3Upload(tempDir string, s3Path string, artifact string, wg *sync.WaitGroup
 		writer.Close()
 	}(wg)
 
-	putToRegions(reader, s3Path, wg)
+	return putToRegions(reader, s3Path, wg)
+}
+
+// loop through configured s3 regions and put artifact in each region
+func putToRegions(reader *io.PipeReader, s3Path string, wg *sync.WaitGroup) []error {
+	creds := credentials.NewEnvCredentials()
+	var errorMap sync.Map
+	errorMap.Store("errs", []error{})
+	for _, region := range Configs.S3Conf.Regions {
+		wg.Add(1)
+		go func(creds *credentials.Credentials, region string, bucket string, wg *sync.WaitGroup, errorMap sync.Map) {
+			defer wg.Done()
+			err := putObj(creds, region, bucket, s3Path, reader)
+			if err != nil {
+				errs, _ := errorMap.Load("errs")
+				errorMap.Store("errs", append(errs.([]error), err))
+			}
+		}(creds, region, Configs.S3Conf.Bucket, wg, errorMap)
+	}
+
+	errs, _ := errorMap.Load("errs")
+	if len(errs.([]error)) > 0 {
+		return errs.([]error)
+	}
 
 	return nil
 }
 
-// loop through configured s3 regions and put artifact in each region
-func putToRegions(reader *io.PipeReader, s3Path string, wg *sync.WaitGroup) {
-	creds := credentials.NewEnvCredentials()
-	for _, region := range Configs.S3Conf.Regions {
-		wg.Add(1)
-		go func(creds *credentials.Credentials, region string, bucket string, wg *sync.WaitGroup) {
-			defer wg.Done()
-			putObj(creds, region, bucket, s3Path, reader)
-		}(creds, region, Configs.S3Conf.Bucket, wg)
-	}
-}
-
 // put artifact to specific region
-func putObj(creds *credentials.Credentials, region string, bucket string, s3Path string, reader *io.PipeReader) {
+func putObj(creds *credentials.Credentials, region string, bucket string, s3Path string, reader *io.PipeReader) error {
 	uploader := s3manager.NewUploader(session.New(&aws.Config{Region: aws.String(region), Credentials: creds}))
 	_, err := uploader.Upload(&s3manager.UploadInput{
 		Body:   reader,
 		Bucket: aws.String(bucket),
 		Key:    aws.String(string(s3Path)),
 	})
-	if err != nil {
-		log.Println(err.Error())
-	}
+
+	return err
 }
