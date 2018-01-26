@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -17,8 +16,8 @@ const (
 	branch           = "--branch"
 	depth            = "--depth"
 	sigHeader        = "X-Hub-Signature"
-	ghEventHeader    = "X-Github-Event"
-	ghDeliveryHeader = "X-Github-Delivery"
+	ghEventHeader    = "X-GitHub-Event"
+	ghDeliveryHeader = "X-GitHub-Delivery"
 )
 
 func signBody(secret, body []byte) []byte {
@@ -53,7 +52,6 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, requestHeaders map[string]string, requestBody string) (*HookContext, error) {
 	hc := HookContext{}
-	fmt.Printf("request headers: %v", requestHeaders)
 	if hc.Signature = requestHeaders[sigHeader]; len(hc.Signature) == 0 {
 		return nil, errors.New("No signature!")
 	}
