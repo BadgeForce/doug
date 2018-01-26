@@ -2,6 +2,7 @@ package webhooklambda
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/BadgeForce/doug"
 	"github.com/aws/aws-lambda-go/events"
@@ -27,15 +28,10 @@ func lambdaHandler(req events.APIGatewayProxyRequest) events.APIGatewayProxyResp
 
 	errors := doug.UploadArtifacts(evt)
 	if errors != nil {
-		var errStrs []string
-		for _, err = range errors {
-			errStrs = append(errStrs, err.Error())
-		}
-
-		b, err := json.Marshal(S3UploadError{"Errors while uploading artifacts to S3", errStrs})
-		if err != nil {
-			return getGateWayRes(err.Error(), 500)
-		}
+		b, _ := json.Marshal(S3UploadError{
+			"Errors while uploading artifacts to S3",
+			[]string{fmt.Sprintf("%+v", errors)},
+		})
 		return getGateWayRes(string(b), 500)
 	}
 
