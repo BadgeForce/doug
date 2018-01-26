@@ -18,6 +18,7 @@ const (
 	sigHeader        = "X-Hub-Signature"
 	ghEventHeader    = "X-GitHub-Event"
 	ghDeliveryHeader = "X-GitHub-Delivery"
+	filePathPrefix   = "/tmp/"
 )
 
 func signBody(secret, body []byte) []byte {
@@ -76,20 +77,23 @@ func ParseHook(secret []byte, requestHeaders map[string]string, requestBody stri
 }
 
 func makeTempDir() (string, error) {
-	name, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-	err = os.Mkdir(name.String(), 0777)
+	id, err := uuid.NewV4()
 	if err != nil {
 		return "", err
 	}
 
-	return name.String(), nil
+	tmpDir := filePathPrefix + id.String()
+
+	err = os.Mkdir(tmpDir, 0777)
+	if err != nil {
+		return "", err
+	}
+
+	return tmpDir, nil
 }
 
 func removeTempDir(name string) {
-	os.RemoveAll("./" + name)
+	os.RemoveAll(name)
 }
 
 //CloneRepo . . .
