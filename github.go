@@ -12,8 +12,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const branch = "--branch"
-const depth = "--depth"
+const (
+	branch           = "--branch"
+	depth            = "--depth"
+	sigHeader        = "X-Hub-Signature"
+	ghEventHeader    = "X-Github-Event"
+	ghDeliveryHeader = "X-Github-Delivery"
+)
 
 func signBody(secret, body []byte) []byte {
 	computed := hmac.New(sha1.New, secret)
@@ -47,15 +52,15 @@ type HookContext struct {
 //ParseHook . . .
 func ParseHook(secret []byte, requestHeaders map[string]string, requestBody string) (*HookContext, error) {
 	hc := HookContext{}
-	if hc.Signature = requestHeaders["x-hub-signature"]; len(hc.Signature) == 0 {
+	if hc.Signature = requestHeaders[sigHeader]; len(hc.Signature) == 0 {
 		return nil, errors.New("No signature!")
 	}
 
-	if hc.Event = requestHeaders["x-github-event"]; len(hc.Event) == 0 {
+	if hc.Event = requestHeaders[ghEventHeader]; len(hc.Event) == 0 {
 		return nil, errors.New("No event!")
 	}
 
-	if hc.Id = requestHeaders["x-github-delivery"]; len(hc.Id) == 0 {
+	if hc.Id = requestHeaders[ghDeliveryHeader]; len(hc.Id) == 0 {
 		return nil, errors.New("No event Id!")
 	}
 
