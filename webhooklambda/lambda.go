@@ -2,6 +2,7 @@ package webhooklambda
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/BadgeForce/doug"
@@ -14,28 +15,33 @@ type S3UploadError struct {
 	Errors  []string `json:"errors"`
 }
 
+type ErrorResponseWrapper struct {
+	Response events.APIGatewayProxyResponse
+}
+
+func (e *ErrorResponseWrapper) Error() string {
+	b, _ := json.Marshal(e.Response)
+	return string(b)
+}
+
 //LambdaHandler . . .
-func lambdaHandler(req events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+func lambdaHandler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	hc, err := doug.ParseHook([]byte(doug.Configs.Github.Secret), req.Headers, req.Body)
 	if err != nil {
-		return getGateWayRes(err.Error(), 400)
+		return events.APIGatewayProxyResponse{}, err
 	}
 
 	evt := github.ReleaseEvent{}
 	if err := json.Unmarshal(hc.Payload, &evt); err != nil {
-		return getGateWayRes(err.Error(), 400)
+		return events.APIGatewayProxyResponse{}, err
 	}
 
-	errors := doug.UploadArtifacts(evt)
-	if errors != nil {
-		b, _ := json.Marshal(S3UploadError{
-			"Errors while uploading artifacts to S3",
-			[]string{fmt.Sprintf("%+v", errors)},
-		})
-		return getGateWayRes(string(b), 500)
+	errs := doug.UploadArtifacts(evt)
+	if errs != nil {
+		return events.APIGatewayProxyResponse{}, errors.New(fmt.Sprintf("%+v", errs))
 	}
 
-	return getGateWayRes("Artifacts Uploaded", 200)
+	return getGateWayRes("Artifacts Uploaded", 200), nil
 }
 
 func getGateWayRes(body string, statusCode int) events.APIGatewayProxyResponse {
@@ -45,7 +51,7 @@ func getGateWayRes(body string, statusCode int) events.APIGatewayProxyResponse {
 	}
 }
 
-func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+func NewLamdaFn(configPath string) func(events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	doug.InitializeConfig(configPath)
 	return lambdaHandler
 }
